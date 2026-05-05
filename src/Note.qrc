@@ -1,0 +1,22 @@
+<RCC version="1.0">
+    <qresource prefix="/">
+        <file>Imgs/Maximize.svg</file>
+        <file>Imgs/Minimize.svg</file>
+        <file>Imgs/MinimizeDark.svg</file>
+        <file>Imgs/MaximizeDark.svg</file>
+        <file>Imgs/ShutDown.svg</file>
+        <file>Imgs/ShutDownDark.svg</file>
+        <file>Imgs/RestoreDark.svg</file>
+        <file>Imgs/Restore.svg</file>
+        <file>Imgs/settings_active.svg</file>
+        <file>Imgs/settings_activeDark.svg</file>
+        <file>Imgs/settingsDark.svg</file>
+        <file>Imgs/settings.svg</file>
+        <file>Imgs/sun.svg</file>
+        <file>Imgs/moon.svg</file>
+        <file>Imgs/newfile.svg</file>
+        <file>Imgs/newfileDark.svg</file>
+        <file>Imgs/openfileDark.svg</file>
+        <file>Imgs/openfile.svg</file>
+    </qresource>
+</RCC>
