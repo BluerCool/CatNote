@@ -46,7 +46,7 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     highlightingRules.append(strikeRule);
 
     // 行内代码 `code`
-    codeFormat.setFontFamily("Consolas, Monaco, monospace");
+    codeFormat.setFontFamilies({"Consolas", "Monaco", "monospace"});
     codeFormat.setBackground(QColor(240, 240, 240));
     codeFormat.setForeground(QColor(200, 50, 50));
     HighlightingRule codeRule;
@@ -55,7 +55,7 @@ MarkdownHighlighter::MarkdownHighlighter(QTextDocument *parent)
     highlightingRules.append(codeRule);
 
     // 代码块 ```code```
-    codeBlockFormat.setFontFamily("Consolas, Monaco, monospace");
+    codeBlockFormat.setFontFamilies({"Consolas", "Monaco", "monospace"});
     codeBlockFormat.setBackground(QColor(245, 245, 245));
     codeBlockFormat.setForeground(QColor(50, 50, 50));
     codeBlockStartExpression = QRegularExpression("^\\s*```");

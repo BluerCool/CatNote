@@ -11,6 +11,7 @@ DesignSystem::DesignSystem(QString videoName, QString videoPath)
 {
 	loadThemes();
 	m_currentTheme = m_lightTheme;
+	m_bodyColor = m_currentTheme.bodyColor;
 
 	homeVideoPath = videoPath + videoName;
 
@@ -78,6 +79,7 @@ void DesignSystem::loadThemes()
 	m_lightTheme.vipGradientStartColor = QColor("#a8c0ff");  // 浅蓝色，渐变起点，明亮且柔和
 	m_lightTheme.vipGradientMidColor = QColor("#c6d1ff");    // 浅淡紫蓝，渐变过渡，自然
 	m_lightTheme.vipGradientEndColor = QColor("#e2e8ff");    // 非常浅的蓝色，渐变终点，清爽柔和
+	m_lightTheme.bodyColor = QColor(255, 255, 255);  // 默认白色
 
 	// Dark Theme
 	m_darkTheme.primaryColor = QColor(243, 128, 100);           // 橙红色
@@ -153,12 +155,14 @@ void DesignSystem::loadThemes()
 	m_darkTheme.vipGradientStartColor = QColor("#2a2e48");   // 深蓝紫，渐变起点，稳重且暗
 	m_darkTheme.vipGradientMidColor = QColor("#3f4268");     // 中间蓝灰，过渡自然
 	m_darkTheme.vipGradientEndColor = QColor("#5a5f8a");     // 浅蓝紫，渐变终点，柔和且不刺眼
+	m_darkTheme.bodyColor = QColor(45, 45, 45);  // 默认深色
 }
 
 void DesignSystem::setThemeMode(ThemeMode mode)
 {
 	m_mode = mode;
 	m_currentTheme = (mode == Light) ? m_lightTheme : m_darkTheme;
+	m_bodyColor = m_currentTheme.bodyColor;
 }
 
 DesignSystem::ThemeMode DesignSystem::themeMode() const
@@ -549,9 +553,9 @@ void DesignSystem::loadThemeFromJson()
     if (obj.contains("themeMode")) {
         QString themeStr = obj["themeMode"].toString();
         if (themeStr == "dark") {
-            setThemeMode(Dark);
+            this->setThemeMode(DesignSystem::Dark);
         } else {
-            setThemeMode(Light);
+            this->setThemeMode(DesignSystem::Light);
         }
     }
 }
@@ -574,4 +578,15 @@ QString& DesignSystem::openFileIconPath()
         openFileIcon = ":/Imgs/openfileDark.svg";
     }
     return openFileIcon;
+}
+
+QColor DesignSystem::bodyColor() const
+{
+	return m_bodyColor;
+}
+
+void DesignSystem::setBodyColor(const QColor &color)
+{
+	m_bodyColor = color;
+	emit bodyColorChanged(color);
 }

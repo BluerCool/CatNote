@@ -11,8 +11,7 @@ TitleBar::TitleBar(QWidget *parent)
     : QWidget{parent}
 {
     m_titleLayout = new QHBoxLayout(this);
-    // m_titleLayout->setContentsMargins(14, 0, rightMargin, 0);
-    m_titleLayout->setContentsMargins(0, 0, 0, 0);
+    m_titleLayout->setContentsMargins(20, 0, 0, 0);  // 将标题文字向右移动一定距离
     m_titleLayout->setSpacing(titleBarSpacing);
 
     QFont font;
@@ -20,6 +19,7 @@ TitleBar::TitleBar(QWidget *parent)
     font.setBold(true);
     m_titleLabel = new QLabel("", this);
     m_titleLabel->setFont(font);
+    m_titleLabel->setContentsMargins(10, 0, 0, 0);  // 进一步增加左侧间距
 
     // 在标题栏里放标题文字 + 三个按钮
     btnMin = new QToolButton(this);

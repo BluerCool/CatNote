@@ -13,6 +13,7 @@
 #include <QRadioButton>
 #include <QStackedWidget>
 #include <QListWidget>
+#include <QColor>
 
 class SettingsDialog : public QDialog
 {
@@ -30,6 +31,7 @@ signals:
     void opacityChanged(int opacity);
     void windowTransparencyChanged(int transparency);
     void titleBarVisibilityChanged(bool visible);
+    void bodyColorChanged(const QColor &color);
 
 protected:
     void showEvent(QShowEvent* event) override;
@@ -44,6 +46,7 @@ private slots:
     void onOpacityChanged(int value);
     void onWindowTransparencyChanged(int value);
     void onThemeModeChanged(int id);
+    void onBodyColorButtonClicked();
     void loadSettings();
     void saveSettings();
     void updateThemeColors();
@@ -74,6 +77,9 @@ private:
     QButtonGroup* m_themeGroup;
     QRadioButton* m_lightRadio;
     QRadioButton* m_darkRadio;
+    QPushButton* m_bodyColorButton = nullptr;
+    QLabel* m_bodyColorSample = nullptr;
+    QColor m_bodyColor;
     
     int m_cornerRadius = 12;
     bool m_roundedCornersEnabled = false;

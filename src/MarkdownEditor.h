@@ -1,10 +1,10 @@
 #pragma once
 
-#include <QPlainTextEdit>
+#include <QTextEdit>
 #include <QFile>
-#include "MarkdownHighlighter.h"
+#include <QEvent>
 
-class MarkdownEditor : public QPlainTextEdit
+class MarkdownEditor : public QTextEdit
 {
     Q_OBJECT
 public:
@@ -26,12 +26,12 @@ signals:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
+    void insertFromMimeData(const QMimeData *source) override;
 
 private slots:
     void onTextChanged();
 
 private:
     QString m_filePath;
-    MarkdownHighlighter *m_highlighter = nullptr;
     bool m_loading = false;
 };

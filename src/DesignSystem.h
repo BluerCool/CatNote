@@ -82,6 +82,8 @@ struct Theme
 	QColor vipGradientStartColor;
 	QColor vipGradientMidColor;
 	QColor vipGradientEndColor;
+	// 主体颜色
+	QColor bodyColor;
 };
 
 class DesignSystem : public QObject
@@ -130,14 +132,8 @@ public:
 	QColor borderColor() const;
 	QColor borderColorHover() const;
 	QColor disabledColor() const;
-
-	// 设置主题
-	void setThemeMode(ThemeMode mode);
-	ThemeMode themeMode() const;
-	void switchTheme();
-	QIcon& setThemeIcon();
-
-	// 遮罩相关
+    QColor bodyColor() const;
+    void setBodyColor(const QColor &color);
 	void setTransparentMask(TransparentMask* tpMask);
 	TransparentMask* getTransparentMask();
 	void setDarkMask(MaskWidget* mask);
@@ -178,13 +174,18 @@ public:
 	void saveThemeToJson();
     void loadThemeFromJson();
 
+	ThemeMode themeMode() const;
+	void setThemeMode(ThemeMode mode);
+	void switchTheme();
+	QIcon& setThemeIcon();
+
 	 // 编辑器图标
     QString& newFileIconPath();
     QString& openFileIconPath();
 
 signals:
 	void themeChanged();
-
+	void bodyColorChanged(const QColor &color);
 	void animationDurationChanged(int ms);
 
 private:
@@ -204,6 +205,7 @@ private:
 	TransparentMask* m_tpMask = nullptr;	// 全局透明遮罩
 	MaskWidget* m_darkMask = nullptr;		// 全局深色遮罩
 	QIcon m_themeIcon;
+	QColor m_bodyColor;
 	QIcon btnMin;
 	QIcon btnMax;
 	QIcon btnClose;

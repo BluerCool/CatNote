@@ -2,24 +2,31 @@
 #include "DesignSystem.h"
 #include <QKeyEvent>
 #include <QFile>
+#include <QFileInfo>
 #include <QTextStream>
 #include <QMessageBox>
+#include <QMimeData>
+#include <QImage>
+#include <QImageReader>
+#include <QUrl>
+#include <QUuid>
+#include <QDir>
+#include <QApplication>
 
 MarkdownEditor::MarkdownEditor(QWidget *parent)
-    : QPlainTextEdit(parent)
+    : QTextEdit(parent)
 {
     setObjectName("markdownEditor");
-    setLineWrapMode(QPlainTextEdit::WidgetWidth);
+    setLineWrapMode(QTextEdit::WidgetWidth);
     setTabStopDistance(40);
+    setAcceptRichText(true);  // Enable direct editing of rendered Markdown content
 
     QFont font("Consolas, Microsoft YaHei, sans-serif", 11);
     setFont(font);
 
-    m_highlighter = new MarkdownHighlighter(document());
-
     setThemeColors();
 
-    connect(this, &QPlainTextEdit::textChanged, this, &MarkdownEditor::onTextChanged);
+    connect(this, &QTextEdit::textChanged, this, &MarkdownEditor::onTextChanged);
     connect(DesignSystem::instance(), &DesignSystem::themeChanged, this, &MarkdownEditor::setThemeColors);
 }
 
@@ -30,13 +37,12 @@ MarkdownEditor::~MarkdownEditor()
 void MarkdownEditor::setThemeColors()
 {
     bool isDark = DesignSystem::instance()->themeMode() == DesignSystem::Dark;
-    QColor bgColor = isDark ? QColor(45, 45, 45) : QColor(255, 255, 255);
+    QColor bgColor = DesignSystem::instance()->bodyColor();
     QColor textColor = isDark ? QColor(230, 230, 230) : QColor(30, 30, 30);
     QColor selBg = DesignSystem::instance()->primaryColor().lighter(150);
-    QColor lineNumBg = isDark ? QColor(40, 40, 40) : QColor(245, 245, 245);
 
     setStyleSheet(QString(
-        "QPlainTextEdit {"
+        "QTextEdit {"
         "  background-color: %1;"
         "  color: %2;"
         "  border: none;"
@@ -58,7 +64,9 @@ bool MarkdownEditor::loadFile(const QString &filePath)
     m_loading = true;
     QTextStream stream(&file);
     stream.setEncoding(QStringConverter::Utf8);
-    setPlainText(stream.readAll());
+    const QString markdown = stream.readAll();
+    document()->setMarkdown(markdown);  // Render Markdown directly for editing
+    document()->setBaseUrl(QUrl::fromLocalFile(QFileInfo(filePath).absolutePath() + "/"));  // Support relative image paths
     file.close();
 
     m_filePath = filePath;
@@ -86,10 +94,15 @@ bool MarkdownEditor::saveFileAs(const QString &filePath)
 
     QTextStream stream(&file);
     stream.setEncoding(QStringConverter::Utf8);
+#if QT_VERSION >= QT_VERSION_CHECK(6, 5, 0)
+    stream << document()->toMarkdown();
+#else
     stream << toPlainText();
+#endif
     file.close();
 
     m_filePath = filePath;
+    document()->setBaseUrl(QUrl::fromLocalFile(QFileInfo(filePath).absolutePath() + "/"));
     document()->setModified(false);
     emit contentModified(false);
     emit fileSaved(filePath);
@@ -112,7 +125,58 @@ void MarkdownEditor::keyPressEvent(QKeyEvent *event)
         insertPlainText("    ");
         return;
     }
-    QPlainTextEdit::keyPressEvent(event);
+    QTextEdit::keyPressEvent(event);
+}
+
+void MarkdownEditor::insertFromMimeData(const QMimeData *source)
+{
+    QImage image;
+    if (source->hasImage()) {
+        image = qvariant_cast<QImage>(source->imageData());
+    }
+    else if (source->hasUrls()) {
+        const QList<QUrl> urls = source->urls();
+        for (const QUrl &url : urls) {
+            if (url.isLocalFile()) {
+                QString localPath = url.toLocalFile();
+                QImageReader reader(localPath);
+                if (reader.canRead()) {
+                    image = reader.read();
+                    if (!image.isNull()) {
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
+    if (!image.isNull()) {
+        QString baseDir;
+        if (!m_filePath.isEmpty()) {
+            baseDir = QFileInfo(m_filePath).absolutePath();
+        } else {
+            baseDir = QApplication::applicationDirPath();
+        }
+
+        QString imageDir = QDir(baseDir).filePath("images");
+        QDir().mkpath(imageDir);
+        QString fileName = QUuid::createUuid().toString().remove('{').remove('}').remove('-') + ".png";
+        QString fullPath = QDir(imageDir).filePath(fileName);
+        if (image.save(fullPath)) {
+            QString relativePath = QDir(baseDir).relativeFilePath(fullPath);
+            QUrl imageUrl(relativePath);
+            QTextCursor cursor = textCursor();
+            QTextImageFormat imageFormat;
+            imageFormat.setName(imageUrl.toString());
+            imageFormat.setWidth(image.width());
+            imageFormat.setHeight(image.height());
+            document()->addResource(QTextDocument::ImageResource, imageUrl, QVariant(image));
+            cursor.insertImage(imageFormat);
+            return;
+        }
+    }
+
+    QTextEdit::insertFromMimeData(source);
 }
 
 void MarkdownEditor::onTextChanged()

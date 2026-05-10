@@ -6,6 +6,7 @@
 #include <QApplication>
 #include <QPainter>
 #include <QPainterPath>
+#include <QColorDialog>
 
 SettingsDialog::SettingsDialog(QWidget* parent)
     : QDialog(parent)
@@ -161,6 +162,37 @@ QWidget* SettingsDialog::createAppearancePage()
     themeLayout->addLayout(radioLayout);
     
     contentLayout->addWidget(themeCard);
+
+    // 主体颜色设置卡片
+    QFrame* bodyColorCard = new QFrame(page);
+    bodyColorCard->setObjectName("settingCard");
+    QVBoxLayout* bodyColorLayout = new QVBoxLayout(bodyColorCard);
+    bodyColorLayout->setSpacing(12);
+    bodyColorLayout->setContentsMargins(16, 16, 16, 16);
+    
+    QLabel* bodyColorTitle = new QLabel("主体颜色", bodyColorCard);
+    bodyColorTitle->setObjectName("cardTitle");
+    bodyColorTitle->setFont(cardFont);
+    bodyColorLayout->addWidget(bodyColorTitle);
+
+    QHBoxLayout* bodyColorRow = new QHBoxLayout();
+    QLabel* bodyColorLabel = new QLabel("内容背景色", bodyColorCard);
+    bodyColorLabel->setObjectName("settingLabel");
+    m_bodyColorButton = new QPushButton("选择颜色", bodyColorCard);
+    m_bodyColorButton->setCursor(Qt::PointingHandCursor);
+    m_bodyColorSample = new QLabel(bodyColorCard);
+    m_bodyColorSample->setFixedSize(24, 24);
+    m_bodyColorSample->setObjectName("colorSample");
+    m_bodyColorSample->setStyleSheet("border: 1px solid #999; border-radius: 4px;");
+
+    bodyColorRow->addWidget(bodyColorLabel);
+    bodyColorRow->addStretch();
+    bodyColorRow->addWidget(m_bodyColorSample);
+    bodyColorRow->addSpacing(8);
+    bodyColorRow->addWidget(m_bodyColorButton);
+    bodyColorLayout->addLayout(bodyColorRow);
+
+    contentLayout->addWidget(bodyColorCard);
 
     // 标题栏设置卡片
     QFrame* titleBarCard = new QFrame(page);
@@ -397,6 +429,8 @@ void SettingsDialog::setupConnections()
             this, &SettingsDialog::onWindowTransparencyChanged);
     connect(m_themeGroup, QOverload<int>::of(&QButtonGroup::idClicked),
             this, &SettingsDialog::onThemeModeChanged);
+    connect(m_bodyColorButton, &QPushButton::clicked,
+            this, &SettingsDialog::onBodyColorButtonClicked);
     
     connect(m_roundedCornersCheck, &QCheckBox::toggled,
             m_cornerRadiusSlider, &QSlider::setEnabled);
@@ -637,6 +671,13 @@ void SettingsDialog::updateThemeColors()
         .arg(isDark ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.04)");
     
     setStyleSheet(styleSheet);
+
+    if (m_bodyColorSample) {
+        QColor sampleColor = m_bodyColor.isValid() ? m_bodyColor : DesignSystem::instance()->bodyColor();
+        m_bodyColorSample->setStyleSheet(QString("background-color: %1; border: 1px solid %2; border-radius: 4px;")
+                                        .arg(sampleColor.name())
+                                        .arg(isDark ? "#555" : "#999"));
+    }
     
     if (m_roundedCornersCheck->isChecked()) {
         m_cornerRadius = m_cornerRadiusSlider->value();
@@ -762,6 +803,13 @@ void SettingsDialog::loadSettings()
             m_lightRadio->setChecked(true);
         }
     }
+    if (obj.contains("bodyColor")) {
+        QColor color(obj["bodyColor"].toString());
+        if (color.isValid()) {
+            m_bodyColor = color;
+            DesignSystem::instance()->setBodyColor(color);
+        }
+    }
     if (obj.contains("titleBarVisible")) {
         m_titleBarVisibleCheck->setChecked(obj["titleBarVisible"].toBool());
     }
@@ -789,13 +837,15 @@ void SettingsDialog::saveSettings()
     obj["opacity"] = m_opacitySlider->value();
     obj["windowTransparency"] = m_windowTransparencySlider->value();
     obj["themeMode"] = (DesignSystem::instance()->themeMode() == DesignSystem::Dark) ? "dark" : "light";
+    if (m_bodyColor.isValid()) {
+        obj["bodyColor"] = m_bodyColor.name();
+    }
+    obj["titleBarVisible"] = m_titleBarVisibleCheck->isChecked();
     
     if (file.open(QIODevice::WriteOnly)) {
         QJsonDocument doc(obj);
         file.write(doc.toJson());
     }
-
-    obj["titleBarVisible"] = m_titleBarVisibleCheck->isChecked();
 }
 
 void SettingsDialog::onTitleBarVisibilityChanged(int state)
@@ -803,6 +853,25 @@ void SettingsDialog::onTitleBarVisibilityChanged(int state)
     bool visible = (state == Qt::Checked);
     emit titleBarVisibilityChanged(visible);
     saveSettings();
+}
+
+void SettingsDialog::onBodyColorButtonClicked()
+{
+    QColor defaultColor = m_bodyColor.isValid() ? m_bodyColor : DesignSystem::instance()->backgroundColor();
+    QColor color = QColorDialog::getColor(defaultColor, this, "选择主体颜色");
+    if (!color.isValid())
+        return;
+
+    m_bodyColor = color;
+    DesignSystem::instance()->setBodyColor(color);
+    if (m_bodyColorSample) {
+        m_bodyColorSample->setStyleSheet(QString("background-color: %1; border: 1px solid %2; border-radius: 4px;")
+                                        .arg(color.name())
+                                        .arg(DesignSystem::instance()->themeMode() == DesignSystem::Dark ? "#555" : "#999"));
+    }
+    emit bodyColorChanged(color);
+    saveSettings();
+    updateThemeColors();
 }
 
 QWidget* SettingsDialog::wrapInScrollArea(QWidget* page)
