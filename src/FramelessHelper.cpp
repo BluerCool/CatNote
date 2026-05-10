@@ -246,7 +246,7 @@ void FramelessHelper::setTitleBar(TitleBar *titleBar)
         return;
 
     // 标题栏右侧所有控件的长宽转为物理像素后在 native 事件中限制标题栏的范围
-    const qreal dpiScale = QApplication::primaryScreen()->devicePixelRatio();
+    const qreal dpiScale = QApplication::screens().first()->devicePixelRatio();  // Updated from deprecated primaryScreen()
 
     // 计算控件总宽度（逻辑像素） 右侧3个控件 + 2个间隔 + 右边距
     const int widgetTotalWidth =

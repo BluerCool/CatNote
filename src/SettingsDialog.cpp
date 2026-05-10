@@ -387,7 +387,7 @@ void SettingsDialog::setupConnections()
             this, &SettingsDialog::onBorderWidthChanged);
     connect(m_animationSpeedSlider, &QSlider::valueChanged,
             this, &SettingsDialog::onAnimationSpeedChanged);
-    connect(m_roundedCornersCheck, &QCheckBox::stateChanged,
+    connect(m_roundedCornersCheck, &QCheckBox::checkStateChanged,
             this, &SettingsDialog::onRoundedCornersChanged);
     connect(m_cornerRadiusSlider, &QSlider::valueChanged,
             this, &SettingsDialog::onCornerRadiusChanged);
@@ -403,7 +403,7 @@ void SettingsDialog::setupConnections()
     connect(m_roundedCornersCheck, &QCheckBox::toggled,
             m_cornerRadiusLabel, &QLabel::setEnabled);
 
-    connect(m_titleBarVisibleCheck, &QCheckBox::stateChanged,
+    connect(m_titleBarVisibleCheck, &QCheckBox::checkStateChanged,
         this, &SettingsDialog::onTitleBarVisibilityChanged);
 }
 

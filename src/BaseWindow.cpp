@@ -1,5 +1,6 @@
 #include "BaseWindow.h"
 #include <QWindow>
+#include <QApplication>  // Added for QApplication::screens()
 #include "DesignSystem.h"
 #include "MessageManager.h"
 
@@ -23,10 +24,11 @@ BaseWindow::BaseWindow(QWidget *parent)
     setMinimumSize(miniSize);
     // 获取主屏幕尺寸
     int w = 0, h = 0;
-    QScreen *screen = QGuiApplication::primaryScreen();
+    QScreen *screen = QApplication::screens().first();  // Updated from deprecated QGuiApplication::primaryScreen()
     if (screen)
     {
-        QSize screenSize = screen->availableSize(); // 可用屏幕大小，不包括任务栏
+        QRect availGeom = screen->availableGeometry();  // Updated from deprecated availableSize()
+        QSize screenSize = availGeom.size(); // 可用屏幕大小，不包括任务栏
         w = int(screenSize.width() * 0.50);         // % 宽度
         h = int(screenSize.height() * 0.55);        // % 高度
         if (w < miniSize.width() && h < miniSize.height())
@@ -156,7 +158,7 @@ bool BaseWindow::isPointOnTitleBar() const
 
 void BaseWindow::mousePressEvent(QMouseEvent* event){
     if (event->button() == Qt::LeftButton && isPointOnTitleBar()) {
-        m_dragPosition = event->globalPos() - frameGeometry().topLeft();
+        m_dragPosition = event->globalPosition().toPoint() - frameGeometry().topLeft();  // Updated from deprecated globalPos()
         m_dragging = true;  
     }
 }
@@ -167,7 +169,7 @@ void BaseWindow::mouseMoveEvent(QMouseEvent* event){
     }
     else if(m_dragging && (event->buttons() & Qt::LeftButton)) {
         // 使用保存的偏移量移动窗口
-        move(event->globalPos() - m_dragPosition);
+        move(event->globalPosition().toPoint() - m_dragPosition);  // Updated from deprecated globalPos()
     }
 }
 
@@ -231,7 +233,7 @@ void BaseWindow::showEvent(QShowEvent *event)
         if (windowHandle())
             screen = windowHandle()->screen();
         if (!screen)
-            screen = QGuiApplication::primaryScreen();
+            screen = QApplication::screens().first();  // Updated from deprecated QGuiApplication::primaryScreen()
         if (screen)
         {
             const QRect avail = screen->availableGeometry();

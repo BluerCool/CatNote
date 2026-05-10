@@ -19,7 +19,7 @@ QRect MessageManager::getScreenGeometry() const
 	// Qt5: QDesktopWidget；Qt6: QScreen
 #ifdef QT_VERSION_MAJOR
 #if QT_VERSION_MAJOR >= 6
-	QScreen* screen = QGuiApplication::primaryScreen();
+	QScreen* screen = QApplication::screens().first();  // Updated from deprecated QGuiApplication::primaryScreen()
 	return screen->geometry();
 #else
 	QDesktopWidget* desktop = QApplication::desktop();
