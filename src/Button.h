@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 
 #include <QWidget>
 #include <QPushButton>
@@ -41,7 +41,7 @@ private:
 
 	// 图标
 	QSvgRenderer* m_svgRenderer = nullptr;
-	qreal m_scaleFactor = 0.65;	// 缩放系数
+	qreal m_scaleFactor = 0.80;	// 缩放系数
 
 	// 按钮主色（可以在构造函数中或外部提供 setter 修改）
 	QColor baseColor;

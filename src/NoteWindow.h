@@ -49,7 +49,6 @@ private slots:
 
 private:
     void setupCornerButtons();
-    void updateSettingsButtonStyle();
     void updateFileButtonStyles();
     void updateRoundedMask();
     void setupEditor();

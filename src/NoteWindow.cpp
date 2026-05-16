@@ -31,32 +31,33 @@ NoteWindow::~NoteWindow()
 void NoteWindow::setupCornerButtons()
 {
     m_themeBtn = new ThemeSwitcherButton(this);
-    m_themeBtn->setFixedSize(52, 52);
-    m_themeBtn->setIconSize(QSize(26, 26));
+    m_themeBtn->setFixedSize(40, 40);
+    m_themeBtn->setIconSize(QSize(22, 22));
 
     m_settingsBtn = new Button("", 12, this);
-    m_settingsBtn->setSvgIcon(":/Imgs/settings.svg");
-    m_settingsBtn->setFixedSize(52, 52);
+    m_settingsBtn->setSvgIcon(DesignSystem::instance()->btnSettingsIconPath());
+    m_settingsBtn->setFixedSize(40, 40);
     
     m_newFileBtn = new Button("", 12, this);
     m_newFileBtn->setSvgIcon(DesignSystem::instance()->newFileIconPath());
-    m_newFileBtn->setFixedSize(44, 44);
+    m_newFileBtn->setFixedSize(36, 36);
     m_newFileBtn->setToolTip("新建文件 (Ctrl+N)");
     
     m_openFileBtn = new Button("", 12, this);
     m_openFileBtn->setSvgIcon(DesignSystem::instance()->openFileIconPath());
-    m_openFileBtn->setFixedSize(44, 44);
+    m_openFileBtn->setFixedSize(36, 36);
     m_openFileBtn->setToolTip("打开文件 (Ctrl+O)");
     
-    updateSettingsButtonStyle();
     updateFileButtonStyles();
     
     connect(m_settingsBtn, &Button::clicked, this, &NoteWindow::onSettingsClicked);
     connect(m_newFileBtn, &Button::clicked, this, &NoteWindow::onNewFileClicked);
     connect(m_openFileBtn, &Button::clicked, this, &NoteWindow::onOpenFileClicked);
     
-    connect(DesignSystem::instance(), &DesignSystem::themeChanged, 
-            this, &NoteWindow::updateSettingsButtonStyle);
+    connect(DesignSystem::instance(), &DesignSystem::themeChanged, this, [this]()
+        {
+            m_settingsBtn->setSvgIcon(DesignSystem::instance()->btnSettingsIconPath());
+        });
     connect(DesignSystem::instance(), &DesignSystem::themeChanged,
             this, &NoteWindow::updateFileButtonStyles);
             
@@ -79,29 +80,6 @@ void NoteWindow::updateFileButtonStyles()
     if (m_openFileBtn) {
         m_openFileBtn->setSvgIcon(DesignSystem::instance()->openFileIconPath());
     }
-}
-
-void NoteWindow::updateSettingsButtonStyle()
-{
-    QColor primary = DesignSystem::instance()->primaryColor();
-    QColor hover = primary.lighter(115);
-    QColor pressed = primary.darker(115);
-    
-    QString style = QString(R"(
-        QPushButton {
-            background-color: %1;
-            border: none;
-            border-radius: 26px;
-        }
-        QPushButton:hover {
-            background-color: %2;
-        }
-        QPushButton:pressed {
-            background-color: %3;
-        }
-    )").arg(primary.name()).arg(hover.name()).arg(pressed.name());
-    
-    m_settingsBtn->setStyleSheet(style);
 }
 
 void NoteWindow::setCornerRadius(int radius)
@@ -468,12 +446,11 @@ void NoteWindow::onWindowResized(int w, int h)
                             h - m_settingsBtn->height() - 16);
     }
     
-    // 左下角按钮布局：新建、打开在左下，主题在左下偏上
-    if (m_newFileBtn) {
-        m_newFileBtn->move(16, h - m_newFileBtn->height() - 80);
+    if (m_openFileBtn) {
+        m_openFileBtn->move(18, h - m_openFileBtn->height() - 64 - m_newFileBtn->height() - 8);
     }
     
-    if (m_openFileBtn) {
-        m_openFileBtn->move(16 + 44 + 8, h - m_openFileBtn->height() - 80);
+    if (m_newFileBtn) {
+        m_newFileBtn->move(18, h - m_newFileBtn->height() - 64);
     }
 }
